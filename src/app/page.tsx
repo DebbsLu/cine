@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Filtros from '../components/Filtros';
 import TablaPeliculas from '../components/TablaPeliculas';
 import FormularioPelicula from '../components/FormularioPelicula';
-import { useAppDispatch } from '../redux/hooks';
+//import { useAppDispatch } from '../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { addPelicula, updatePelicula } from '../redux/slices/peliculasSlice';
 import { Pelicula } from '../types/pelicula';
 import { Dashboard } from '../components/Dashboard';
@@ -19,6 +20,7 @@ export default function Home() {
   const [selectedPelicula, setSelectedPelicula] = useState<Pelicula | null>(null);
   
   const dispatch = useAppDispatch();
+  const peliculas = useAppSelector((state) => state.peliculas.lista);
 
   const handleOpenCrear = () => {
     setSelectedPelicula(null);
@@ -99,6 +101,7 @@ export default function Home() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSavePelicula}
         peliculaEdicion={selectedPelicula}
+        peliculas={peliculas}
       />
     </main>
   );

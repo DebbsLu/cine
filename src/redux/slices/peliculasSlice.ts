@@ -2,6 +2,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 //Importamos los tipos de datos de Pelicula desde el archivo types/pelicula.ts
 import { Pelicula } from '../../types/pelicula';
+import { generarCodigoPelicula } from "../../utils/generarCodigoPeliculas";
 
 interface PeliculasState {
   lista: Pelicula[];
@@ -15,8 +16,8 @@ interface PeliculasState {
 const initialState: PeliculasState = {
   lista: [
     // Datos semilla basados copiados de imagen de ref
-    { codigo: '1', nombre: 'Avengers: Endgame', genero: 'Acción', duracion: '130 min', clasificacion: 'B15', salaAsignada: 'Sala 1', precioEntrada: 5.50, estado: 'Disponible', idioma: 'Español' },
-    { codigo: '2', nombre: 'The Lion King', genero: 'Animación', duracion: '120 min', clasificacion: 'A', salaAsignada: 'Sala 2', precioEntrada: 4.50, estado: 'Disponible', idioma: 'Inglés' },
+    { codigo: 'PEL001', nombre: 'Avengers: Endgame', genero: 'Acción', duracion: '130 min', clasificacion: 'B15', salaAsignada: 'Sala 1', precioEntrada: 5.50, estado: 'Disponible', idioma: 'Español' },
+    { codigo: 'PEL002', nombre: 'The Lion King', genero: 'Animación', duracion: '120 min', clasificacion: 'A', salaAsignada: 'Sala 2', precioEntrada: 4.50, estado: 'Disponible', idioma: 'Inglés' },
   ],
   filtros: {
     buscar: '',
@@ -30,12 +31,14 @@ const peliculasSlice = createSlice({
   initialState,
   reducers: {
     addPelicula: (state, action: PayloadAction<Pelicula>) => {
-      const existe = state.lista.some(p => p.codigo === action.payload.codigo);
-      if (!existe) {
-        state.lista.push(action.payload);
-      } else {
-        alert("Error: El código de la película ya existe.");
-      }
+
+      const nuevaPelicula = {
+        ...action.payload,
+        codigo: generarCodigoPelicula(state.lista)
+      };
+
+      state.lista.push(nuevaPelicula);
+
     },
     deletePelicula: (state, action: PayloadAction<string>) => {
       state.lista = state.lista.filter(p => p.codigo !== action.payload);

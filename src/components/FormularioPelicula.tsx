@@ -2,19 +2,26 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Pelicula } from '../types/pelicula';
+//Para generar el select de géneros, importamos la lista de géneros desde el archivo data/generos.ts
+import { GENEROS } from '../data/generos';
+//Importamos la función para generar el código de la película
+import { generarCodigoPelicula } from "../utils/generarCodigoPeliculas";
 
 interface FormularioPeliculaProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (pelicula: Pelicula) => void;
   peliculaEdicion?: Pelicula | null;
+  peliculas: Pelicula[];
 }
 
-export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEdicion }: FormularioPeliculaProps) {
+export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEdicion, peliculas }: FormularioPeliculaProps) {
   const [form, setForm] = useState<Pelicula>({
     codigo: '', nombre: '', genero: '', duracion: '',
     clasificacion: 'A', salaAsignada: '', precioEntrada: 0, estado: 'Disponible', idioma: ''
   });
+
+  const siguienteCodigo = generarCodigoPelicula(peliculas);
 
   useEffect(() => {
     if (peliculaEdicion) {
@@ -32,8 +39,8 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.nombre.trim()) return alert("El nombre de la película es obligatorio");
-    if (!form.codigo.trim()) return alert("El código es obligatorio");
-    
+    //if (!form.codigo.trim()) return alert("El código es obligatorio");
+
     onSave(form);
     onClose();
   };
@@ -47,18 +54,16 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
           </h3>
           <button onClick={onClose} className="text-gray-500 hover:text-black text-xl">✕</button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Código único</label>
               <input
                 type="text"
-                disabled={!!peliculaEdicion}
-                value={form.codigo}
-                onChange={e => setForm({...form, codigo: e.target.value})}
+                value={peliculaEdicion ? form.codigo : siguienteCodigo}
+                disabled
                 className="w-full border p-2 rounded disabled:bg-gray-100"
-                required
               />
             </div>
             <div>
@@ -66,7 +71,7 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
               <input
                 type="text"
                 value={form.nombre}
-                onChange={e => setForm({...form, nombre: e.target.value})}
+                onChange={e => setForm({ ...form, nombre: e.target.value })}
                 className="w-full border p-2 rounded"
                 required
               />
@@ -75,13 +80,24 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Género</label>
-              <input
-                type="text"
+              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+                Género
+              </label>
+
+              <select
+                required
                 value={form.genero}
-                onChange={e => setForm({...form, genero: e.target.value})}
-                className="w-full border p-2 rounded"
-              />
+                onChange={e => setForm({ ...form, genero: e.target.value })}
+                className="w-full border p-2 rounded bg-white"
+              >
+                <option value="">Seleccione un género</option>
+
+                {GENEROS.map((genero) => (
+                  <option key={genero} value={genero}>
+                    {genero}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Duración</label>
@@ -89,7 +105,7 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
                 type="text"
                 placeholder="Ej: 120 min"
                 value={form.duracion}
-                onChange={e => setForm({...form, duracion: e.target.value})}
+                onChange={e => setForm({ ...form, duracion: e.target.value })}
                 className="w-full border p-2 rounded"
               />
             </div>
@@ -98,7 +114,7 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Clasificación</label>
-              <select value={form.clasificacion} onChange={e => setForm({...form, clasificacion: e.target.value})} className="w-full border p-2 rounded bg-white">
+              <select value={form.clasificacion} onChange={e => setForm({ ...form, clasificacion: e.target.value })} className="w-full border p-2 rounded bg-white">
                 <option value="A">A (Todo público)</option>
                 <option value="B15">B15 (+15 años)</option>
                 <option value="C">C (Adultos)</option>
@@ -109,7 +125,7 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
               <input
                 type="text"
                 value={form.idioma}
-                onChange={e => setForm({...form, idioma: e.target.value})}
+                onChange={e => setForm({ ...form, idioma: e.target.value })}
                 className="w-full border p-2 rounded"
               />
             </div>
@@ -121,7 +137,7 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
               <input
                 type="text"
                 value={form.salaAsignada}
-                onChange={e => setForm({...form, salaAsignada: e.target.value})}
+                onChange={e => setForm({ ...form, salaAsignada: e.target.value })}
                 className="w-full border p-2 rounded"
               />
             </div>
@@ -130,8 +146,10 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
               <input
                 type="number"
                 step="0.01"
+                //Con esto evitamos que el usuario ingrese un valor negativo
+                min={0}
                 value={form.precioEntrada}
-                onChange={e => setForm({...form, precioEntrada: parseFloat(e.target.value) || 0})}
+                onChange={e => setForm({ ...form, precioEntrada: parseFloat(e.target.value) || 0 })}
                 className="w-full border p-2 rounded"
               />
             </div>
@@ -139,7 +157,7 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
 
           <div>
             <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Estado</label>
-            <select value={form.estado} onChange={e => setForm({...form, estado: e.target.value as any})} className="w-full border p-2 rounded bg-white">
+            <select value={form.estado} onChange={e => setForm({ ...form, estado: e.target.value as any })} className="w-full border p-2 rounded bg-white">
               <option value="Disponible">Disponible (Activa)</option>
               <option value="No disponible">No disponible (Inactiva)</option>
             </select>
