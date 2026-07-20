@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { agregarNuevaVenta } from '../redux/slices/reservasSlice';
 import { Pelicula } from '../types/pelicula';
+import { Funcion } from '../types/funcion';
 import Filtros from './Filtros';
 import { MapaAsientos } from './MapaAsientos';
 
@@ -13,6 +14,9 @@ export const FormularioReserva: React.FC<FormularioReservaProps> = ({ onClose })
   const dispatch = useAppDispatch();
   const peliculas = useAppSelector((state) => state.peliculas.lista);
   const ventas = useAppSelector((state) => state.reservas.ventas);
+  const funciones = useAppSelector(
+    state => state.funciones.lista
+);
   
   // 1. Traemos los filtros globales de Redux para usarlos en el filtrado lógico
   const filtros = useAppSelector((state) => state.peliculas.filtros);
@@ -21,6 +25,8 @@ export const FormularioReserva: React.FC<FormularioReservaProps> = ({ onClose })
   const [paso, setPaso] = useState<1 | 2 | 3>(1);
   const [peliculaSel, setPeliculaSel] = useState<Pelicula | null>(null);
   const [asientosSel, setAsientosSel] = useState<string[]>([]);
+
+  const [funcionSel, setFuncionSel] =useState<Funcion | null>(null);
 
   // Info Cliente
   const [cliente, setCliente] = useState({ nombre: '', email: '', telefono: '' });
@@ -34,9 +40,18 @@ export const FormularioReserva: React.FC<FormularioReservaProps> = ({ onClose })
     return cumpleNombre && cumpleGenero && cumpleIdioma;
   });
 
+  const funcionesDisponibles = funciones.filter(
+    f =>
+    f.peliculaId === peliculaSel?.codigo
+  );
+
   const asientosOcupados = ventas
-    .filter((v) => v.peliculaId === peliculaSel?.codigo)
-    .flatMap((v) => v.asientos);
+    .filter(
+    v=>v.funcionId===funcionSel?.id
+    )
+    .flatMap(
+    v=>v.asientos 
+    );
 
   const handleToggleAsiento = (id: string) => {
     if (asientosSel.includes(id)) {
@@ -46,26 +61,32 @@ export const FormularioReserva: React.FC<FormularioReservaProps> = ({ onClose })
     }
   };
 
-  const totalPagar = (peliculaSel?.precioEntrada || 0) * asientosSel.length;
+  const precio =
+  peliculaSel?.precioEntrada ?? 0;
 
-  const handleConfirmarPago = (e: React.FormEvent) => {
+  const totalPagar =
+  precio * asientosSel.length;
+
+const handleConfirmarPago = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!peliculaSel || asientosSel.length === 0) return;
+
+    if (!peliculaSel || !funcionSel || asientosSel.length === 0)
+        return;
 
     dispatch(
-      agregarNuevaVenta({
-        fechaHoraFuncion: `${new Date().toLocaleDateString()} Autogenerada`,
-        peliculaId: peliculaSel.codigo,
-        cliente: cliente.nombre,
-        email: cliente.email,
-        telefono: cliente.telefono,
-        asientos: asientosSel,
-        monto: totalPagar,
-        estado: 'Completa'
-      })
+        agregarNuevaVenta({
+            funcionId: funcionSel.id,
+            cliente: cliente.nombre,
+            email: cliente.email,
+            telefono: cliente.telefono,
+            asientos: asientosSel,
+            monto: totalPagar,
+            estado: 'Completa'
+        })
     );
+
     onClose();
-  };
+};
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -98,67 +119,157 @@ export const FormularioReserva: React.FC<FormularioReservaProps> = ({ onClose })
             </div>
           )}
 
-          {paso === 2 && peliculaSel && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-center">
-                <h3 className="text-xl font-bold text-gray-800">{peliculaSel.nombre}</h3>
-                <p className="text-sm text-gray-500 mt-2">{peliculaSel.genero} • {peliculaSel.duracion}</p>
-                <div className="bg-slate-50 p-4 rounded-lg mt-4 text-left text-xs space-y-1.5 text-gray-600">
-                  <p><strong>Sala:</strong> {peliculaSel.salaAsignada}</p>
-                  <p><strong>Idioma:</strong> {peliculaSel.idioma}</p>
-                  <p><strong>Clasificación:</strong> {peliculaSel.clasificacion}</p>
-                  <p><strong>Precio unitario:</strong> ${peliculaSel.precioEntrada}.00</p>
-                </div>
-                <button onClick={() => setPaso(3)} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-3 rounded-lg mt-6 uppercase tracking-wider">
-                  Seleccionar Asientos
+{paso === 2 && peliculaSel && (
+<div className="space-y-6">
+    <div>
+        <h2 className="text-2xl font-bold">
+            {peliculaSel.nombre}
+        </h2>
+        <p className="text-gray-500">
+            Seleccione un horario disponible
+        </p>
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {funcionesDisponibles.map(funcion => (
+            <div
+                key={funcion.id}
+                className="bg-white rounded-xl border p-5 shadow-sm"
+            >
+                <p>
+                    <strong>Sala:</strong>
+                    {funcion.salaId}
+                </p>
+                <p>
+                    <strong>Fecha:</strong>
+                    {funcion.fecha}
+                </p>
+                <p>
+                    <strong>Hora:</strong>
+                    {funcion.hora}
+                </p>
+                <p>
+                    <strong>Precio:</strong>
+                    ${funcion.precio.toFixed(2)}
+                </p>
+                <button onClick={() => {
+                        setFuncionSel(funcion);
+                     setPaso(3);
+                    }}
+                    className="mt-4 w-full bg-blue-600 text-white py-2 rounded"
+                >
+                    Seleccionar Función
                 </button>
-                <button onClick={() => setPaso(1)} className="text-xs text-gray-400 underline mt-4 block mx-auto">Volver</button>
-              </div>
-
-              <div>
-                <MapaAsientos
-                  asientosOcupados={asientosOcupados}
-                  asientosSeleccionados={asientosSel}
-                  onToggleAsiento={handleToggleAsiento}
-                />
-              </div>
             </div>
-          )}
+        ))}
+    </div>
+    <button
+        onClick={() => setPaso(1)}
+        className="text-sm underline"
+    >
+        Volver
+    </button>
+</div>
+)}
 
-          {paso === 3 && peliculaSel && (
-            <div className="max-w-md mx-auto bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              <h3 className="font-bold text-gray-800 border-b pb-2 mb-4">Resumen de Selección</h3>
-              <div className="text-xs space-y-2 text-gray-600 mb-6">
-                <p><strong>Película:</strong> {peliculaSel.nombre}</p>
-                <p><strong>Asientos seleccionados:</strong> {asientosSel.join(', ') || 'Ninguno'}</p>
-                <p className="text-base font-bold text-gray-800 mt-2">Total a Pagar: ${totalPagar.toFixed(2)}</p>
-              </div>
+{paso === 3 && peliculaSel && funcionSel && (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    
+    {/* Columna izquierda: resumen */}
+    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <h3 className="text-xl font-bold text-gray-800 mb-4">
+        {peliculaSel.nombre}
+      </h3>
 
-              <form onSubmit={handleConfirmarPago} className="space-y-4">
-                <input
-                  type="text" required placeholder="Nombre del cliente"
-                  value={cliente.nombre} onChange={(e) => setCliente({ ...cliente, nombre: e.target.value })}
-                  className="w-full border p-2 text-sm rounded-lg"
-                />
-                <input
-                  type="email" required placeholder="Correo electrónico"
-                  value={cliente.email} onChange={(e) => setCliente({ ...cliente, email: e.target.value })}
-                  className="w-full border p-2 text-sm rounded-lg"
-                />
-                <input
-                  type="text" required placeholder="Teléfono"
-                  value={cliente.telefono} onChange={(e) => setCliente({ ...cliente, telefono: e.target.value })}
-                  className="w-full border p-2 text-sm rounded-lg"
-                />
-                <div className="flex gap-2 pt-2">
-                  <button type="button" onClick={() => setPaso(2)} className="w-1/3 bg-gray-100 text-gray-600 text-xs py-3 rounded-lg font-bold">Atrás</button>
-                  <button type="submit" disabled={asientosSel.length === 0} className="w-2/3 bg-emerald-600 text-white text-xs py-3 rounded-lg font-bold disabled:bg-gray-200 uppercase tracking-wider">
-                    Confirmar y Pagar
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
+      <div className="bg-slate-50 p-4 rounded-lg text-sm space-y-2 text-gray-700">
+        <p><strong>Sala:</strong> {funcionSel.salaId}</p>
+        <p><strong>Fecha:</strong> {funcionSel.fecha}</p>
+        <p><strong>Hora:</strong> {funcionSel.hora}</p>
+        <p><strong>Idioma:</strong> {peliculaSel.idioma}</p>
+        <p><strong>Clasificación:</strong> {peliculaSel.clasificacion}</p>
+        <p><strong>Precio por boleto:</strong> ${funcionSel.precio.toFixed(2)}</p>
+        <p><strong>Boletos:</strong> {asientosSel.length}</p>
+        <p><strong>Asientos:</strong> {asientosSel.join(', ') || 'Ninguno'}</p>
+      </div>
+
+      <div className="mt-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+        <p className="text-lg font-bold text-emerald-700">
+          Total a pagar: ${totalPagar.toFixed(2)}
+        </p>
+      </div>
+    </div>
+
+    {/* Columna derecha: mapa de asientos */}
+    <div>
+      <MapaAsientos
+        asientosOcupados={asientosOcupados}
+        asientosSeleccionados={asientosSel}
+        onToggleAsiento={handleToggleAsiento}
+      />
+    </div>
+
+    {/* Formulario cliente */}
+    <div className="md:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+      <h3 className="font-bold text-gray-800 border-b pb-2 mb-4">
+        Datos del Cliente
+      </h3>
+
+      <form onSubmit={handleConfirmarPago} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <input
+            type="text"
+            required
+            placeholder="Nombre del cliente"
+            value={cliente.nombre}
+            onChange={(e) =>
+              setCliente({ ...cliente, nombre: e.target.value })
+            }
+            className="w-full border p-2 text-sm rounded-lg"
+          />
+
+          <input
+            type="email"
+            required
+            placeholder="Correo electrónico"
+            value={cliente.email}
+            onChange={(e) =>
+              setCliente({ ...cliente, email: e.target.value })
+            }
+            className="w-full border p-2 text-sm rounded-lg"
+          />
+
+          <input
+            type="text"
+            required
+            placeholder="Teléfono"
+            value={cliente.telefono}
+            onChange={(e) =>
+              setCliente({ ...cliente, telefono: e.target.value })
+            }
+            className="w-full border p-2 text-sm rounded-lg"
+          />
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <button
+            type="button"
+            onClick={() => setPaso(2)}
+            className="w-1/3 bg-gray-100 text-gray-700 py-3 rounded-lg font-bold text-sm hover:bg-gray-200"
+          >
+            Atrás
+          </button>
+
+          <button
+            type="submit"
+            disabled={asientosSel.length === 0 || !funcionSel}
+            className="w-2/3 bg-emerald-600 text-white py-3 rounded-lg font-bold text-sm hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed uppercase tracking-wide"
+          >
+            Confirmar y Pagar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
         </div>
       </div>
     </div>

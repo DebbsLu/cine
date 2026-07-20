@@ -12,6 +12,7 @@ const dataGraficoMock = [
 export const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
   const peliculas = useAppSelector((state) => state.peliculas.lista);
+  const funciones = useAppSelector((state) => state.funciones.lista);
   const ventas = useAppSelector((state) => state.reservas.ventas);
 
   const [modalAbierto, setModalAbierto] = useState(false);
@@ -19,7 +20,7 @@ export const Dashboard: React.FC = () => {
 
   // Cálculos Automáticos
   const totalPeliculas = peliculas.length;
-  const totalFunciones = peliculas.length; 
+  const totalFunciones = funciones.length; 
   const totalBoletos = ventas.reduce((acc, v) => acc + v.asientos.length, 0);
   const ingresos = ventas.reduce((acc, v) => acc + v.monto, 0);
 
@@ -29,10 +30,32 @@ export const Dashboard: React.FC = () => {
   const asientosDisponibles = capacidadTotal - asientosOcupados;
 
   // Película más reservada (Buscando por p.codigo)
-  const conteoPeliculas: Record<string, number> = {};
-  ventas.forEach(v => { conteoPeliculas[v.peliculaId] = (conteoPeliculas[v.peliculaId] || 0) + v.asientos.length; });
-  const codigoMasReservada = Object.keys(conteoPeliculas).reduce((a, b) => conteoPeliculas[a] > conteoPeliculas[b] ? a : b, '');
-  const peliculaMasReservada = peliculas.find(p => p.codigo === codigoMasReservada)?.nombre || 'Ninguna';
+const conteoPeliculas: Record<string, number> = {};
+
+ventas.forEach((venta) => {
+
+  const funcion = funciones.find(
+    f => f.id === venta.funcionId
+  );
+
+  if (!funcion) return;
+
+  conteoPeliculas[funcion.peliculaId] =
+    (conteoPeliculas[funcion.peliculaId] || 0) +
+    venta.asientos.length;
+
+});
+
+const codigoMasReservada = Object.keys(conteoPeliculas).reduce(
+  (a, b) =>
+    conteoPeliculas[a] > conteoPeliculas[b] ? a : b,
+  ''
+);
+
+const peliculaMasReservada =
+  peliculas.find(
+    p => p.codigo === codigoMasReservada
+  )?.nombre || 'Ninguna';
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto p-4 md:p-6 text-slate-800">
@@ -69,7 +92,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="flex justify-end">
-            <button onClick={() => setModalAbierto(true)} className="bg-emerald-600 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow uppercase">
+            <button onClick={() => { console.log("Abriendo modal"); setModalAbierto(true)}} className="bg-emerald-600 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow uppercase">
               + Nueva Venta
             </button>
           </div>
@@ -95,15 +118,40 @@ export const Dashboard: React.FC = () => {
               <div>
                 <h3 className="font-bold text-xs text-gray-500 mb-3 uppercase">Cartelera Disponible</h3>
                 <div className="space-y-2">
-                  {peliculas.map((p) => (
-                    <div key={p.codigo} className="flex justify-between text-xs border-b pb-1">
-                      <div>
-                        <p className="font-bold text-gray-700">{p.nombre}</p> {/* Usando nombre */}
-                        <p className="text-[10px] text-gray-400">{p.salaAsignada} • {p.idioma}</p> {/* Usando idioma */}
-                      </div>
-                      <span className="font-mono bg-slate-100 p-1 rounded font-bold text-[10px]">{p.clasificacion}</span>
-                    </div>
-                  ))}
+{funciones.map((funcion) => {
+
+  const pelicula = peliculas.find(
+    p => p.codigo === funcion.peliculaId
+  );
+
+  if (!pelicula) return null;
+
+  return (
+    <div
+      key={funcion.id}
+      className="flex justify-between text-xs border-b pb-2"
+    >
+      <div>
+        <p className="font-bold text-gray-700">
+          {pelicula.nombre}
+        </p>
+
+        <p className="text-[10px] text-gray-400">
+          {funcion.salaId} • {funcion.fecha}
+        </p>
+
+        <p className="text-[10px] text-gray-400">
+          {funcion.hora}
+        </p>
+      </div>
+
+      <span className="font-mono bg-slate-100 p-1 rounded font-bold text-[10px]">
+        ${funcion.precio.toFixed(2)}
+      </span>
+    </div>
+  );
+
+})}
                 </div>
               </div>
               <p className="text-[10px] text-gray-400 uppercase mt-4">Top Reservada: <strong className="text-gray-700">{peliculaMasReservada}</strong></p>
@@ -126,12 +174,21 @@ export const Dashboard: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {ventas.map((v) => {
-                const pelicula = peliculas.find((p) => p.codigo === v.peliculaId); // Buscando por p.codigo
-                return (
+      {ventas.map((v) => {
+          const funcion = funciones.find(
+              f => f.id === v.funcionId
+          );
+          const pelicula = peliculas.find(
+              p => p.codigo === funcion?.peliculaId
+          );
+          return (
                   <tr key={v.idVenta} className="border-b hover:bg-slate-50">
                     <td className="p-3 font-mono font-bold text-gray-500">{v.idVenta}</td>
-                    <td className="p-3 text-gray-500">{v.fechaHoraFuncion}</td>
+                    <td className="p-3 text-gray-500">
+                    {funcion
+                    ? `${funcion.fecha} ${funcion.hora}`
+                    : '-'}
+                    </td>
                     <td className="p-3 font-bold text-gray-800">{pelicula?.nombre}</td> {/* Usando nombre */}
                     <td className="p-3">{v.cliente}</td>
                     <td className="p-3 text-right font-bold">${v.monto.toFixed(2)}</td>
