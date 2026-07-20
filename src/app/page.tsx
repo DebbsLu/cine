@@ -8,15 +8,31 @@ import { useAppDispatch } from '../redux/hooks';
 import { addPelicula, updatePelicula } from '../redux/slices/peliculasSlice';
 import { Pelicula } from '../types/pelicula';
 import { Dashboard } from '../components/Dashboard';
+import TablaCartelera from '../components/TablaCartelera';
+import FormularioFuncion from '../components/FormularioFuncion';
+
+import { Funcion } from '../types/funcion';
+
+import {
+  addFuncion,
+  updateFuncion
+} from '../redux/slices/funcionesSlice';
 
 // Definimos las pestañas de la aplicación
-type Tab = 'Inicio' | 'Peliculas';
+type Tab =
+  | 'Inicio'
+  | 'Peliculas'
+  | 'Cartelera';
 
 export default function Home() {
   // 1. Configuramos 'Inicio' por defecto para que muestre el Dashboard de entrada
   const [activeTab, setActiveTab] = useState<Tab>('Inicio'); 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPelicula, setSelectedPelicula] = useState<Pelicula | null>(null);
+  const [isFuncionModalOpen, setIsFuncionModalOpen] = useState(false);
+
+const [selectedFuncion, setSelectedFuncion] =
+useState<Funcion | null>(null);
   
   const dispatch = useAppDispatch();
 
@@ -38,6 +54,36 @@ export default function Home() {
     }
   };
 
+  const handleOpenCrearFuncion = () => {
+
+  setSelectedFuncion(null);
+
+  setIsFuncionModalOpen(true);
+
+};
+
+const handleOpenEditarFuncion = (funcion: Funcion) => {
+
+  setSelectedFuncion(funcion);
+
+  setIsFuncionModalOpen(true);
+
+};
+
+const handleSaveFuncion = (funcion: Funcion) => {
+
+  if (selectedFuncion) {
+
+    dispatch(updateFuncion(funcion));
+
+  } else {
+
+    dispatch(addFuncion(funcion));
+
+  }
+
+};
+
   return (
     <main className="min-h-screen bg-gray-50 text-black">
       {/* NAVBAR */}
@@ -46,8 +92,8 @@ export default function Home() {
           <div className="flex items-center gap-8">
             <span className="font-black text-xl text-emerald-600 tracking-wider">CINE APP</span>
             <div className="flex gap-4 h-16">
-              {/* Cambiado para ciclar solo por las 2 pestañas core */}
-              {(['Inicio', 'Peliculas'] as Tab[]).map((tab) => (
+              {/* Cambiado para ciclar solo por las 3 pestañas core */}
+              {(['Inicio', 'Peliculas', 'Cartelera'] as Tab[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -57,7 +103,7 @@ export default function Home() {
                       : 'border-transparent text-gray-500 hover:text-black'
                   }`}
                 >
-                  {tab === 'Inicio' ? 'Inicio / Dashboard' : 'Películas'}
+                  {tab === 'Inicio' ? 'Inicio / Dashboard' : tab === 'Peliculas' ? 'Películas' : 'Cartelera'}
                 </button>
               ))}
             </div>
@@ -91,6 +137,41 @@ export default function Home() {
             <TablaPeliculas onEditar={handleOpenEditar} />
           </div>
         )}
+        {activeTab === 'Cartelera' && (
+
+<div>
+
+<div className="flex justify-between items-center mb-6">
+
+<h1 className="text-2xl font-extrabold text-gray-800">
+
+GESTIÓN DE CARTELERA
+
+</h1>
+
+<button
+
+onClick={handleOpenCrearFuncion}
+
+className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-bold"
+
+>
+
++ AGREGAR FUNCIÓN
+
+</button>
+
+</div>
+
+<TablaCartelera
+
+onEditar={handleOpenEditarFuncion}
+
+/>
+
+</div>
+
+)}
       </div>
 
       {/* MODAL GLOBAL DE EDICIÓN/CREACIÓN DE PELÍCULAS */}
@@ -100,6 +181,18 @@ export default function Home() {
         onSave={handleSavePelicula}
         peliculaEdicion={selectedPelicula}
       />
+
+      <FormularioFuncion
+
+isOpen={isFuncionModalOpen}
+
+onClose={() => setIsFuncionModalOpen(false)}
+
+onSave={handleSaveFuncion}
+
+funcionEdicion={selectedFuncion}
+
+/>
     </main>
   );
 }
