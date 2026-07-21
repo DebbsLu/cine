@@ -3,6 +3,9 @@ import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { eliminarVentaExistente, editarVentaExistente } from '../redux/slices/reservasSlice';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { FormularioReserva } from './FormularioReserva';
+import { Reserva } from '../types/reserva';
+
+const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 const dataGraficoMock = [
   { name: 'Dom', ventas: 30 }, { name: 'Lun', ventas: 45 }, { name: 'Mar', ventas: 25 },
@@ -12,14 +15,36 @@ const dataGraficoMock = [
 export const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
   const peliculas = useAppSelector((state) => state.peliculas.lista);
+  
+  const funciones = useAppSelector((state) => state.funciones.lista);
   const ventas = useAppSelector((state) => state.reservas.ventas);
+
+const ventasPorDia: Record<string, number> = {
+  Dom: 0,
+  Lun: 0,
+  Mar: 0,
+  Mié: 0,
+  Jue: 0,
+  Vie: 0,
+  Sáb: 0,
+};
+
+ventas.forEach((venta: Reserva) => {
+  const dia = dias[new Date(venta.fechaVenta).getDay()];
+  ventasPorDia[dia] += venta.asientos.length;
+});
+
+const dataGrafico = dias.map((dia) => ({
+  name: dia,
+  ventas: ventasPorDia[dia],
+}));
 
   const [modalAbierto, setModalAbierto] = useState(false);
   const [seccion, setSeccion] = useState<'inicio' | 'ventas'>('inicio');
 
   // Cálculos Automáticos
   const totalPeliculas = peliculas.length;
-  const totalFunciones = peliculas.length; 
+  const totalFunciones = funciones.length; 
   const totalBoletos = ventas.reduce((acc, v) => acc + v.asientos.length, 0);
   const ingresos = ventas.reduce((acc, v) => acc + v.monto, 0);
 
@@ -29,10 +54,40 @@ export const Dashboard: React.FC = () => {
   const asientosDisponibles = capacidadTotal - asientosOcupados;
 
   // Película más reservada (Buscando por p.codigo)
-  const conteoPeliculas: Record<string, number> = {};
-  ventas.forEach(v => { conteoPeliculas[v.peliculaId] = (conteoPeliculas[v.peliculaId] || 0) + v.asientos.length; });
-  const codigoMasReservada = Object.keys(conteoPeliculas).reduce((a, b) => conteoPeliculas[a] > conteoPeliculas[b] ? a : b, '');
-  const peliculaMasReservada = peliculas.find(p => p.codigo === codigoMasReservada)?.nombre || 'Ninguna';
+const conteoPeliculas: Record<string, number> = {};
+
+ventas.forEach((venta) => {
+
+  const funcion = funciones.find(
+    f => f.id === venta.funcionId
+  );
+
+  if (!funcion) return;
+
+  conteoPeliculas[funcion.peliculaId] =
+    (conteoPeliculas[funcion.peliculaId] || 0) +
+    venta.asientos.length;
+
+});
+
+const funcionesDisponibles = funciones.filter((funcion) => {
+  const pelicula = peliculas.find(
+    p => p.codigo === funcion.peliculaId
+  );
+
+  return pelicula?.estado === "Disponible";
+});
+
+const codigoMasReservada = Object.keys(conteoPeliculas).reduce(
+  (a, b) =>
+    conteoPeliculas[a] > conteoPeliculas[b] ? a : b,
+  ''
+);
+
+const peliculaMasReservada =
+  peliculas.find(
+    p => p.codigo === codigoMasReservada
+  )?.nombre || 'Ninguna';
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto p-4 md:p-6 text-slate-800">
@@ -69,7 +124,7 @@ export const Dashboard: React.FC = () => {
           </div>
 
           <div className="flex justify-end">
-            <button onClick={() => setModalAbierto(true)} className="bg-emerald-600 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow uppercase">
+            <button onClick={() => { console.log("Abriendo modal"); setModalAbierto(true)}} className="bg-emerald-600 text-white font-bold text-xs px-5 py-2.5 rounded-lg shadow uppercase">
               + Nueva Venta
             </button>
           </div>
@@ -80,7 +135,7 @@ export const Dashboard: React.FC = () => {
               <h3 className="font-bold text-xs text-gray-500 mb-3 uppercase">Ventas del Día</h3>
               <div className="w-full h-48">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dataGraficoMock}>
+                  <LineChart data={dataGrafico}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                     <XAxis dataKey="name" fontSize={11} />
                     <YAxis fontSize={11} />
@@ -95,15 +150,41 @@ export const Dashboard: React.FC = () => {
               <div>
                 <h3 className="font-bold text-xs text-gray-500 mb-3 uppercase">Cartelera Disponible</h3>
                 <div className="space-y-2">
-                  {peliculas.map((p) => (
-                    <div key={p.codigo} className="flex justify-between text-xs border-b pb-1">
-                      <div>
-                        <p className="font-bold text-gray-700">{p.nombre}</p> {/* Usando nombre */}
-                        <p className="text-[10px] text-gray-400">{p.salaAsignada} • {p.idioma}</p> {/* Usando idioma */}
-                      </div>
-                      <span className="font-mono bg-slate-100 p-1 rounded font-bold text-[10px]">{p.clasificacion}</span>
-                    </div>
-                  ))}
+                  
+  {funcionesDisponibles.map((funcion) => {
+
+  const pelicula = peliculas.find(
+    p => p.codigo === funcion.peliculaId
+  );
+
+  if (!pelicula) return null;
+
+  return (
+    <div
+      key={funcion.id}
+      className="flex justify-between text-xs border-b pb-2"
+    >
+      <div>
+        <p className="font-bold text-gray-700">
+          {pelicula.nombre}
+        </p>
+
+        <p className="text-[10px] text-gray-400">
+          {funcion.salaId} • {funcion.fecha}
+        </p>
+
+        <p className="text-[10px] text-gray-400">
+          {funcion.hora}
+        </p>
+      </div>
+
+      <span className="font-mono bg-slate-100 p-1 rounded font-bold text-[10px]">
+        ${funcion.precio.toFixed(2)}
+      </span>
+    </div>
+  );
+
+})}
                 </div>
               </div>
               <p className="text-[10px] text-gray-400 uppercase mt-4">Top Reservada: <strong className="text-gray-700">{peliculaMasReservada}</strong></p>
@@ -122,38 +203,27 @@ export const Dashboard: React.FC = () => {
                 <th className="p-3">Cliente</th>
                 <th className="p-3 text-right">Monto</th>
                 <th className="p-3 text-center">Estado</th>
-                <th className="p-3 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {ventas.map((v) => {
-                const pelicula = peliculas.find((p) => p.codigo === v.peliculaId); // Buscando por p.codigo
-                return (
+      {ventas.map((v) => {
+          const funcion = funciones.find(
+              f => f.id === v.funcionId
+          );
+          const pelicula = peliculas.find(
+              p => p.codigo === funcion?.peliculaId
+          );
+          return (
                   <tr key={v.idVenta} className="border-b hover:bg-slate-50">
                     <td className="p-3 font-mono font-bold text-gray-500">{v.idVenta}</td>
-                    <td className="p-3 text-gray-500">{v.fechaHoraFuncion}</td>
+                    <td className="p-3 text-gray-500">
+                      {funcion ? `${funcion.fecha} ${funcion.hora}` : 'Sin función'}
+                    </td>
                     <td className="p-3 font-bold text-gray-800">{pelicula?.nombre}</td> {/* Usando nombre */}
                     <td className="p-3">{v.cliente}</td>
                     <td className="p-3 text-right font-bold">${v.monto.toFixed(2)}</td>
                     <td className="p-3 text-center">
                       <span className="bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded text-[10px]">{v.estado}</span>
-                    </td>
-                    <td className="p-3 text-center space-x-1">
-                      <button
-                        onClick={() => {
-                          const n = prompt("Nombre nuevo cliente:", v.cliente);
-                          if (n) dispatch(editarVentaExistente({ ...v, cliente: n }));
-                        }}
-                        className="p-1 border rounded bg-slate-50 hover:bg-slate-100"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => { if (confirm("¿Eliminar venta?")) dispatch(eliminarVentaExistente(v.idVenta)); }}
-                        className="p-1 border rounded bg-red-50 text-red-600 hover:bg-red-100"
-                      >
-                        🗑️
-                      </button>
                     </td>
                   </tr>
                 );

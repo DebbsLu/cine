@@ -1,11 +1,21 @@
-export interface Reserva {
-  idVenta: string; // Automático
-  fechaHoraFuncion: string; // Colocada en dashboard / elegida
-  peliculaId: string;
-  cliente: string;
-  email: string;
-  telefono: string;
-  asientos: string[]; // Ej: ['A-1', 'A-2']
-  monto: number;
-  estado: 'Completa' | 'Pendiente';
+export interface Reserva{
+
+idVenta:string;
+
+funcionId:string;
+
+cliente:string;
+
+email:string;
+
+telefono:string;
+
+asientos:string[];
+
+monto:number;
+
+estado:string;
+
+fechaVenta: string;
+
 }

@@ -1,0 +1,15 @@
+export const IDIOMAS = [
+  "Español",
+  "Inglés",
+  "Inglés Subtitulado",
+  "Japonés",
+  "Japonés Subtitulado",
+  "Coreano",
+  "Coreano Subtitulado",
+  "Francés",
+  "Francés Subtitulado",
+  "Italiano",
+  "Italiano Subtitulado",
+  "Alemán",
+  "Alemán Subtitulado",
+];

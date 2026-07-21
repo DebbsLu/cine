@@ -16,8 +16,8 @@ interface PeliculasState {
 const initialState: PeliculasState = {
   lista: [
     // Datos semilla basados copiados de imagen de ref
-    { codigo: 'PEL001', nombre: 'Avengers: Endgame', genero: 'Acción', duracion: '130 min', clasificacion: 'B15', salaAsignada: 'Sala 1', precioEntrada: 5.50, estado: 'Disponible', idioma: 'Español' },
-    { codigo: 'PEL002', nombre: 'The Lion King', genero: 'Animación', duracion: '120 min', clasificacion: 'A', salaAsignada: 'Sala 2', precioEntrada: 4.50, estado: 'Disponible', idioma: 'Inglés' },
+    { codigo: 'PEL001', nombre: 'Avengers: Endgame', genero: 'Acción', duracion: '130 min', clasificacion: 'B15', precioEntrada: 5.50, estado: 'Disponible', idioma: 'Español' },
+    { codigo: 'PEL002', nombre: 'The Lion King', genero: 'Animación', duracion: '120 min', clasificacion: 'A', precioEntrada: 4.50, estado: 'Disponible', idioma: 'Inglés' },
   ],
   filtros: {
     buscar: '',

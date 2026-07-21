@@ -2,11 +2,15 @@
 import { configureStore } from '@reduxjs/toolkit';
 import peliculasReducer from './slices/peliculasSlice';
 import reservasReducer from './slices/reservasSlice';
+import funcionesReducer from './slices/funcionesSlice';
+import salasReducer from './slices/salasSlice';
 
 export const store = configureStore({
   reducer: {
     peliculas: peliculasReducer,
-    reservas: reservasReducer
+    reservas: reservasReducer,
+    funciones: funcionesReducer,
+    salas: salasReducer,
     // Aquí podrás agregar los reducers de reservas o salas más adelante
   },
 });

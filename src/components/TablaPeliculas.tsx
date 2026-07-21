@@ -31,7 +31,7 @@ export default function TablaPeliculas({ onEditar }: TablaPeliculasProps) {
             <th className="px-6 py-4">Género / Idioma</th>
             <th className="px-6 py-4">Duración</th>
             <th className="px-6 py-4">Clasif.</th>
-            <th className="px-6 py-4">Sala/Precio</th>
+            <th className="px-6 py-4">Precio</th>
             <th className="px-6 py-4">Estado</th>
             <th className="px-6 py-4 text-center">Acciones</th>
           </tr>
@@ -48,7 +48,7 @@ export default function TablaPeliculas({ onEditar }: TablaPeliculasProps) {
                   {p.clasificacion}
                 </span>
               </td>
-              <td className="px-6 py-4">{p.salaAsignada} — ${p.precioEntrada.toFixed(2)}</td>
+              <td className="px-6 py-4">${p.precioEntrada.toFixed(2)}</td>
               <td className="px-6 py-4">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.estado === 'Disponible' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
                   {p.estado === 'Disponible' ? 'Activa' : 'Inactiva'}
