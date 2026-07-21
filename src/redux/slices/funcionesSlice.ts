@@ -9,7 +9,7 @@ const initialState: FuncionesState = {
   lista: [
     {
       id: 'F001',
-      peliculaId: '1',
+      peliculaId: 'PEL001',
       salaId: 'Sala 1',
       fecha: '2026-07-20',
       hora: '14:00',
@@ -17,7 +17,7 @@ const initialState: FuncionesState = {
     },
     {
       id: 'F002',
-      peliculaId: '2',
+      peliculaId: 'PEL002',
       salaId: 'Sala 2',
       fecha: '2026-07-20',
       hora: '15:00',
