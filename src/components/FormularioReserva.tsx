@@ -95,6 +95,7 @@ const handleConfirmarPago = (e: React.FormEvent) => {
             telefono: cliente.telefono,
             asientos: asientosSel,
             monto: totalPagar,
+            fechaVenta: new Date().toISOString(),
             estado: 'Completa'
         })
     );

@@ -16,4 +16,6 @@ monto:number;
 
 estado:string;
 
+fechaVenta: string;
+
 }

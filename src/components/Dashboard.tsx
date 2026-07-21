@@ -3,6 +3,9 @@ import { useAppSelector, useAppDispatch } from '../redux/hooks';
 import { eliminarVentaExistente, editarVentaExistente } from '../redux/slices/reservasSlice';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { FormularioReserva } from './FormularioReserva';
+import { Reserva } from '../types/reserva';
+
+const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 const dataGraficoMock = [
   { name: 'Dom', ventas: 30 }, { name: 'Lun', ventas: 45 }, { name: 'Mar', ventas: 25 },
@@ -15,6 +18,26 @@ export const Dashboard: React.FC = () => {
   
   const funciones = useAppSelector((state) => state.funciones.lista);
   const ventas = useAppSelector((state) => state.reservas.ventas);
+
+const ventasPorDia: Record<string, number> = {
+  Dom: 0,
+  Lun: 0,
+  Mar: 0,
+  Mié: 0,
+  Jue: 0,
+  Vie: 0,
+  Sáb: 0,
+};
+
+ventas.forEach((venta: Reserva) => {
+  const dia = dias[new Date(venta.fechaVenta).getDay()];
+  ventasPorDia[dia] += venta.asientos.length;
+});
+
+const dataGrafico = dias.map((dia) => ({
+  name: dia,
+  ventas: ventasPorDia[dia],
+}));
 
   const [modalAbierto, setModalAbierto] = useState(false);
   const [seccion, setSeccion] = useState<'inicio' | 'ventas'>('inicio');
@@ -112,7 +135,7 @@ const peliculaMasReservada =
               <h3 className="font-bold text-xs text-gray-500 mb-3 uppercase">Ventas del Día</h3>
               <div className="w-full h-48">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={dataGraficoMock}>
+                  <LineChart data={dataGrafico}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
                     <XAxis dataKey="name" fontSize={11} />
                     <YAxis fontSize={11} />
