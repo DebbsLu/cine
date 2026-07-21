@@ -217,9 +217,7 @@ const peliculaMasReservada =
                   <tr key={v.idVenta} className="border-b hover:bg-slate-50">
                     <td className="p-3 font-mono font-bold text-gray-500">{v.idVenta}</td>
                     <td className="p-3 text-gray-500">
-                    {funcion
-                    ? `${funcion.fecha} ${funcion.hora}`
-                    : '-'}
+                      {funcion ? `${funcion.fecha} ${funcion.hora}` : 'Sin función'}
                     </td>
                     <td className="p-3 font-bold text-gray-800">{pelicula?.nombre}</td> {/* Usando nombre */}
                     <td className="p-3">{v.cliente}</td>

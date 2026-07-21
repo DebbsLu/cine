@@ -15,7 +15,8 @@ const initialState: ReservasState = {
       telefono: '7766-5544',
       asientos: ['A-1'],
       monto: 13.00,
-      estado: 'Completa'
+      estado: 'Completa',
+      fechaVenta: '2026-07-19T10:30:00'
     },
     {
       idVenta: '10002',
@@ -25,7 +26,8 @@ const initialState: ReservasState = {
       telefono: '7123-4567',
       asientos: ['B-1'],
       monto: 18.00,
-      estado: 'Completa'
+      estado: 'Completa',
+      fechaVenta: '2026-07-20T14:15:00'
     }
   ]
 };
