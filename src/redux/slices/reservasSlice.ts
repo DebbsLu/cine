@@ -14,9 +14,9 @@ const initialState: ReservasState = {
       email: 'juan@mail.com',
       telefono: '7766-5544',
       asientos: ['A-1'],
-      monto: 13.00,
+      monto: 5.50,
       estado: 'Completa',
-      fechaVenta: '2026-07-19T10:30:00'
+      fechaVenta: '2026-07-20T10:30:00'
     },
     {
       idVenta: '10002',
@@ -25,7 +25,7 @@ const initialState: ReservasState = {
       email: 'maria@mail.com',
       telefono: '7123-4567',
       asientos: ['B-1'],
-      monto: 18.00,
+      monto: 4.50,
       estado: 'Completa',
       fechaVenta: '2026-07-20T14:15:00'
     }

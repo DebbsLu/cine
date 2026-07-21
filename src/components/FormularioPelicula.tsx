@@ -103,10 +103,15 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
             <div>
               <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Duración</label>
               <input
-                type="text"
-                placeholder="Ej: 120 min"
+                type="number"
+                required
+                min={1}
+                step={1}
+                placeholder="En minutos (Ej: 120)"
                 value={form.duracion}
-                onChange={e => setForm({ ...form, duracion: e.target.value })}
+                onChange={(e) =>
+                  setForm({ ...form, duracion: e.target.value })
+                }
                 className="w-full border p-2 rounded"
               />
             </div>
@@ -121,36 +126,36 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
                 <option value="C">C (Adultos)</option>
               </select>
             </div>
-<div>
-  <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
-    Idioma
-  </label>
+            <div>
+              <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">
+                Idioma
+              </label>
 
-  <select
-    required
-    value={form.idioma}
-    onChange={e =>
-      setForm({
-        ...form,
-        idioma: e.target.value
-      })
-    }
-    className="w-full border p-2 rounded bg-white"
-  >
-    <option value="">
-      Seleccione un idioma
-    </option>
+              <select
+                required
+                value={form.idioma}
+                onChange={e =>
+                  setForm({
+                    ...form,
+                    idioma: e.target.value
+                  })
+                }
+                className="w-full border p-2 rounded bg-white"
+              >
+                <option value="">
+                  Seleccione un idioma
+                </option>
 
-    {IDIOMAS.map((idioma) => (
-      <option
-        key={idioma}
-        value={idioma}
-      >
-        {idioma}
-      </option>
-    ))}
-  </select>
-</div>
+                {IDIOMAS.map((idioma) => (
+                  <option
+                    key={idioma}
+                    value={idioma}
+                  >
+                    {idioma}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -160,10 +165,15 @@ export default function FormularioPelicula({ isOpen, onClose, onSave, peliculaEd
               <input
                 type="number"
                 step="0.01"
-                //Con esto evitamos que el usuario ingrese un valor negativo
                 min={0}
-                value={form.precioEntrada}
-                onChange={e => setForm({ ...form, precioEntrada: parseFloat(e.target.value) || 0 })}
+                placeholder="Ej: 7.50"
+                value={form.precioEntrada === 0 ? "" : form.precioEntrada}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    precioEntrada: e.target.value === "" ? 0 : parseFloat(e.target.value),
+                  })
+                }
                 className="w-full border p-2 rounded"
               />
             </div>

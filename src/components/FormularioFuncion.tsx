@@ -151,19 +151,19 @@ export default function FormularioFuncion({
                             </option>
 
                             {peliculas
-  .filter(p => p.estado === "Disponible")
-  .map(p => (
+                                .filter(p => p.estado === "Disponible")
+                                .map(p => (
 
-                                <option
-                                    key={p.codigo}
-                                    value={p.codigo}
-                                >
+                                    <option
+                                        key={p.codigo}
+                                        value={p.codigo}
+                                    >
 
-                                    {p.nombre}
+                                        {p.nombre}
 
-                                </option>
+                                    </option>
 
-                            ))}
+                                ))}
 
                         </select>
 
@@ -226,10 +226,11 @@ export default function FormularioFuncion({
                                 type="date"
                                 className="w-full border rounded p-2 mt-1"
                                 value={form.fecha}
-                                onChange={e =>
+                                min={new Date().toISOString().split("T")[0]}
+                                onChange={(e) =>
                                     setForm({
                                         ...form,
-                                        fecha: e.target.value
+                                        fecha: e.target.value,
                                     })
                                 }
                                 required
