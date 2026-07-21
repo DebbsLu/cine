@@ -12,6 +12,7 @@ const dataGraficoMock = [
 export const Dashboard: React.FC = () => {
   const dispatch = useAppDispatch();
   const peliculas = useAppSelector((state) => state.peliculas.lista);
+  
   const funciones = useAppSelector((state) => state.funciones.lista);
   const ventas = useAppSelector((state) => state.reservas.ventas);
 
@@ -44,6 +45,14 @@ ventas.forEach((venta) => {
     (conteoPeliculas[funcion.peliculaId] || 0) +
     venta.asientos.length;
 
+});
+
+const funcionesDisponibles = funciones.filter((funcion) => {
+  const pelicula = peliculas.find(
+    p => p.codigo === funcion.peliculaId
+  );
+
+  return pelicula?.estado === "Disponible";
 });
 
 const codigoMasReservada = Object.keys(conteoPeliculas).reduce(
@@ -118,7 +127,8 @@ const peliculaMasReservada =
               <div>
                 <h3 className="font-bold text-xs text-gray-500 mb-3 uppercase">Cartelera Disponible</h3>
                 <div className="space-y-2">
-{funciones.map((funcion) => {
+                  
+  {funcionesDisponibles.map((funcion) => {
 
   const pelicula = peliculas.find(
     p => p.codigo === funcion.peliculaId
@@ -170,7 +180,6 @@ const peliculaMasReservada =
                 <th className="p-3">Cliente</th>
                 <th className="p-3 text-right">Monto</th>
                 <th className="p-3 text-center">Estado</th>
-                <th className="p-3 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -194,23 +203,6 @@ const peliculaMasReservada =
                     <td className="p-3 text-right font-bold">${v.monto.toFixed(2)}</td>
                     <td className="p-3 text-center">
                       <span className="bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded text-[10px]">{v.estado}</span>
-                    </td>
-                    <td className="p-3 text-center space-x-1">
-                      <button
-                        onClick={() => {
-                          const n = prompt("Nombre nuevo cliente:", v.cliente);
-                          if (n) dispatch(editarVentaExistente({ ...v, cliente: n }));
-                        }}
-                        className="p-1 border rounded bg-slate-50 hover:bg-slate-100"
-                      >
-                        ✏️
-                      </button>
-                      <button
-                        onClick={() => { if (confirm("¿Eliminar venta?")) dispatch(eliminarVentaExistente(v.idVenta)); }}
-                        className="p-1 border rounded bg-red-50 text-red-600 hover:bg-red-100"
-                      >
-                        🗑️
-                      </button>
                     </td>
                   </tr>
                 );

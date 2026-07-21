@@ -32,13 +32,27 @@ export const FormularioReserva: React.FC<FormularioReservaProps> = ({ onClose })
   const [cliente, setCliente] = useState({ nombre: '', email: '', telefono: '' });
 
   // 2. Filtrado Lógico usando los campos exactos de tu Redux (buscar, genero, idioma)
-  const peliculasFiltradas = peliculas.filter((p) => {
-    const cumpleNombre = p.nombre.toLowerCase().includes((filtros.buscar || '').toLowerCase());
-    const cumpleGenero = filtros.genero === '' || p.genero === filtros.genero;
-    const cumpleIdioma = filtros.idioma === '' || p.idioma === filtros.idioma;
-    
-    return cumpleNombre && cumpleGenero && cumpleIdioma;
-  });
+const peliculasFiltradas = peliculas.filter((p) => {
+  const cumpleNombre = p.nombre
+    .toLowerCase()
+    .includes((filtros.buscar || "").toLowerCase());
+
+  const cumpleGenero =
+    filtros.genero === "" || p.genero === filtros.genero;
+
+  const cumpleIdioma =
+    filtros.idioma === "" || p.idioma === filtros.idioma;
+
+  const cumpleEstado =
+    p.estado === "Disponible";
+
+  return (
+    cumpleNombre &&
+    cumpleGenero &&
+    cumpleIdioma &&
+    cumpleEstado
+  );
+});
 
   const funcionesDisponibles = funciones.filter(
     f =>
@@ -112,7 +126,7 @@ const handleConfirmarPago = (e: React.FormEvent) => {
                   >
                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2 text-lg">🎬</div>
                     <h4 className="font-bold text-sm text-gray-800">{p.nombre}</h4>
-                    <p className="text-xs text-gray-400 mt-1">{p.genero} • {p.salaAsignada}</p>
+                    <p className="text-xs text-gray-400 mt-1">• {p.genero} •</p>
                   </div>
                 ))}
               </div>
@@ -240,13 +254,28 @@ const handleConfirmarPago = (e: React.FormEvent) => {
           <input
             type="text"
             required
-            placeholder="Teléfono"
+            placeholder="Teléfono (####-####)"
             value={cliente.telefono}
-            onChange={(e) =>
-              setCliente({ ...cliente, telefono: e.target.value })
-            }
+            onChange={(e) => {
+              let valor = e.target.value.replace(/\D/g, "");
+
+              if (valor.length > 8) {
+                valor = valor.slice(0, 8);
+              }
+
+              if (valor.length > 4) {
+                valor = valor.slice(0, 4) + "-" + valor.slice(4);
+              }
+
+              setCliente({
+                ...cliente,
+                telefono: valor,
+              });
+            }}
+            pattern="[0-9]{4}-[0-9]{4}"
+            title="Ingrese un teléfono con el formato 1234-5678"
             className="w-full border p-2 text-sm rounded-lg"
-          />
+        />
         </div>
 
         <div className="flex gap-3 pt-4">

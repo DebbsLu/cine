@@ -150,7 +150,9 @@ export default function FormularioFuncion({
 
                             </option>
 
-                            {peliculas.map(p => (
+                            {peliculas
+  .filter(p => p.estado === "Disponible")
+  .map(p => (
 
                                 <option
                                     key={p.codigo}

@@ -49,7 +49,7 @@ export default function TablaCartelera({ onEditar }: Props) {
 
                         <th className="text-right p-3">Precio</th>
 
-                        <th className="text-center p-3">Acciones</th>
+                        
 
                     </tr>
 
@@ -121,33 +121,7 @@ export default function TablaCartelera({ onEditar }: Props) {
 
                                 <td className="p-3">
 
-                                    <div className="flex justify-center gap-2">
 
-                                        <button
-
-                                            onClick={() => onEditar(funcion)}
-
-                                            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-
-                                        >
-
-                                            Editar
-
-                                        </button>
-
-                                        <button
-
-                                            onClick={() => eliminar(funcion.id)}
-
-                                            className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-
-                                        >
-
-                                            Eliminar
-
-                                        </button>
-
-                                    </div>
 
                                 </td>
 
